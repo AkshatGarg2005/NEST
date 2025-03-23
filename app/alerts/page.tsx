@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertTriangle, Bell, Clock, Info } from "lucide-react"
-import api from "@/utils/api.util"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 
@@ -21,6 +20,46 @@ interface Notification {
   read: boolean
   createdAt: string
 }
+
+// Mock notifications data
+const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    _id: "1",
+    type: "emergency_alert",
+    title: "Flash Flood Warning",
+    message: "Flash flood warning issued for the Oak Creek area. Please avoid low-lying areas and stay indoors.",
+    priority: "critical",
+    read: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: "2",
+    type: "report_status",
+    title: "Water Leak Report Updated",
+    message: "Your water leak report at Main Street has been updated to status: In Progress",
+    priority: "normal",
+    read: true,
+    createdAt: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
+  },
+  {
+    _id: "3",
+    type: "community_announcement",
+    title: "Community Meeting",
+    message: "Reminder: Community meeting will be held tomorrow at 7 PM in the Community Center.",
+    priority: "low",
+    read: false,
+    createdAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+  },
+  {
+    _id: "4",
+    type: "report_status",
+    title: "Noise Complaint Resolved",
+    message: "Your noise complaint at Pine Street has been resolved.",
+    priority: "normal", 
+    read: false,
+    createdAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+  }
+];
 
 export default function AlertsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -38,95 +77,40 @@ export default function AlertsPage() {
       setIsLoading(true)
       setError(null)
       
-      // Sample mock notifications
-      const mockNotifications: Notification[] = [
-        {
-          _id: "1",
-          type: "emergency_alert",
-          title: "Flash Flood Warning",
-          message: "Flash flood warning issued for the Oak Creek area. Please avoid low-lying areas and stay indoors.",
-          priority: "critical",
-          read: false,
-          createdAt: new Date().toISOString()
-        },
-        {
-          _id: "2",
-          type: "report_status",
-          title: "Water Leak Report Updated",
-          message: "Your water leak report at Main Street has been updated to status: In Progress",
-          priority: "normal",
-          read: true,
-          createdAt: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-        },
-        {
-          _id: "3",
-          type: "community_announcement",
-          title: "Community Meeting",
-          message: "Reminder: Community meeting will be held tomorrow at 7 PM in the Community Center.",
-          priority: "low",
-          read: false,
-          createdAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-        },
-        {
-          _id: "4",
-          type: "report_status",
-          title: "Noise Complaint Resolved",
-          message: "Your noise complaint at Pine Street has been resolved.",
-          priority: "normal", 
-          read: false,
-          createdAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
-        }
-      ];
-      
-      try {
-        const response = await api.get('/notifications')
+      // Use mock data instead of real API call
+      setTimeout(() => {
+        let filteredNotifications = [...MOCK_NOTIFICATIONS];
         
-        if (response?.data?.data) {
-          setNotifications(response.data.data)
-        } else {
-          // Fall back to mock data if no real data
-          setNotifications(mockNotifications)
-          console.log("Using mock notifications due to API unavailability")
+        if (activeTab === "unread") {
+          filteredNotifications = filteredNotifications.filter(n => !n.read);
+        } else if (activeTab === "emergency") {
+          filteredNotifications = filteredNotifications.filter(n => n.type === "emergency_alert");
+        } else if (activeTab === "reports") {
+          filteredNotifications = filteredNotifications.filter(n => n.type === "report_status");
         }
-      } catch (error) {
-        console.error("Error fetching notifications:", error)
-        // Fall back to mock data on error
-        setNotifications(mockNotifications)
-        toast({
-          title: "Connection Error",
-          description: "Using sample data. Real API connection unavailable.",
-          variant: "destructive",
-        })
-      }
+        
+        setNotifications(filteredNotifications);
+        setIsLoading(false);
+      }, 500); // Add a small delay to simulate network
+      
     } catch (error) {
       console.error("Error in notifications processing:", error)
       setError("Failed to load notifications. Please try again later.")
-    } finally {
       setIsLoading(false)
     }
   }
 
   const markAsRead = async (id: string) => {
     try {
-      try {
-        await api.put(`/notifications/${id}/read`)
-        toast({
-          title: "Success",
-          description: "Notification marked as read",
-        })
-      } catch (error) {
-        console.error("Error marking notification as read:", error)
-        toast({
-          title: "Error",
-          description: "Failed to update on server. Updated locally only.",
-          variant: "destructive",
-        })
-      }
-      
-      // Update local state regardless of API success
+      // Update local state
       setNotifications(notifications.map(notif => 
         notif._id === id ? { ...notif, read: true } : notif
       ))
+      
+      toast({
+        title: "Success",
+        description: "Notification marked as read",
+      })
     } catch (error) {
       console.error("Error marking notification as read:", error)
       toast({
@@ -139,23 +123,13 @@ export default function AlertsPage() {
 
   const markAllAsRead = async () => {
     try {
-      try {
-        await api.put('/notifications/read-all')
-        toast({
-          title: "Success",
-          description: "All notifications marked as read",
-        })
-      } catch (error) {
-        console.error("Error marking all notifications as read:", error)
-        toast({
-          title: "Error",
-          description: "Failed to update on server. Updated locally only.",
-          variant: "destructive",
-        })
-      }
-      
-      // Update local state regardless of API success
+      // Update local state
       setNotifications(notifications.map(notif => ({ ...notif, read: true })))
+      
+      toast({
+        title: "Success",
+        description: "All notifications marked as read",
+      })
     } catch (error) {
       console.error("Error marking all notifications as read:", error)
       toast({

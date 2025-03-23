@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Droplets, Lightbulb, Volume2, Wrench, Search, ThumbsUp, MessageSquare } from "lucide-react"
-import api from "@/utils/api.util"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { useToast } from "@/hooks/use-toast"
 
@@ -34,14 +33,72 @@ interface Report {
   comments: any[]
 }
 
+// Mock data to use when API fails
+const MOCK_REPORTS: Report[] = [
+  {
+    _id: "1",
+    title: "Water Leak on Main Street",
+    description: "There's a significant water leak near the corner of Main and 5th.",
+    category: "water",
+    subcategory: "leak",
+    severity: "high",
+    status: "pending",
+    location: {
+      address: "123 Main St"
+    },
+    createdAt: new Date().toISOString(),
+    reporter: {
+      name: "John Doe"
+    },
+    upvotes: ["user1", "user2"],
+    comments: []
+  },
+  {
+    _id: "2",
+    title: "Power Outage in Oak District",
+    description: "Entire neighborhood has lost power after the storm.",
+    category: "electricity",
+    subcategory: "outage",
+    severity: "critical",
+    status: "in-progress",
+    location: {
+      address: "Oak Avenue District"
+    },
+    createdAt: new Date().toISOString(),
+    reporter: {
+      name: "Sarah Smith"
+    },
+    upvotes: ["user1"],
+    comments: [{user: "user3", text: "I'm experiencing this too!"}]
+  },
+  {
+    _id: "3",
+    title: "Noise Complaint - Loud Music",
+    description: "Neighbor playing extremely loud music past midnight.",
+    category: "noise",
+    subcategory: "music",
+    severity: "medium",
+    status: "resolved",
+    location: {
+      address: "456 Pine Rd, Apt 3B"
+    },
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    reporter: {
+      name: "Mike Johnson"
+    },
+    upvotes: [],
+    comments: []
+  }
+];
+
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([])
   const [activeTab, setActiveTab] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
@@ -55,6 +112,9 @@ export default function ReportsPage() {
       setIsLoading(true)
       setError(null)
       
+      // Skip actual API call and just use mock data
+      // This can be uncommented when your backend is ready
+      /*
       let endpoint = '/reports?'
       
       // Add pagination
@@ -68,12 +128,12 @@ export default function ReportsPage() {
       }
       
       // Add category filter
-      if (categoryFilter) {
+      if (categoryFilter && categoryFilter !== "all") {
         endpoint += `&category=${categoryFilter}`
       }
       
       // Add status filter
-      if (statusFilter) {
+      if (statusFilter && statusFilter !== "all") {
         endpoint += `&status=${statusFilter}`
       }
       
@@ -83,123 +143,48 @@ export default function ReportsPage() {
       }
       
       const response = await api.get(endpoint)
+      setReports(response.data.data || [])
       
-      // For development/testing, you can use mock data if API isn't ready
-      const mockData = [
-        {
-          _id: "1",
-          title: "Water Leak on Main Street",
-          description: "There's a significant water leak near the corner of Main and 5th.",
-          category: "water",
-          subcategory: "leak",
-          severity: "high",
-          status: "pending",
-          location: {
-            address: "123 Main St"
-          },
-          createdAt: new Date().toISOString(),
-          reporter: {
-            name: "John Doe"
-          },
-          upvotes: ["user1", "user2"],
-          comments: []
-        },
-        {
-          _id: "2",
-          title: "Power Outage in Oak District",
-          description: "Entire neighborhood has lost power after the storm.",
-          category: "electricity",
-          subcategory: "outage",
-          severity: "critical",
-          status: "in-progress",
-          location: {
-            address: "Oak Avenue District"
-          },
-          createdAt: new Date().toISOString(),
-          reporter: {
-            name: "Sarah Smith"
-          },
-          upvotes: ["user1"],
-          comments: [{user: "user3", text: "I'm experiencing this too!"}]
-        },
-        {
-          _id: "3",
-          title: "Noise Complaint - Loud Music",
-          description: "Neighbor playing extremely loud music past midnight.",
-          category: "noise",
-          subcategory: "music",
-          severity: "medium",
-          status: "resolved",
-          location: {
-            address: "456 Pine Rd, Apt 3B"
-          },
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          reporter: {
-            name: "Mike Johnson"
-          },
-          upvotes: [],
-          comments: []
-        }
-      ];
-      
-      // Use real data from API if available, otherwise fall back to mock data
-      if (response?.data?.data) {
-        setReports(response.data.data)
-        
-        // Set pagination info
-        if (response.data.pagination) {
-          setTotalPages(response.data.pagination.pages || 1)
-        }
-      } else {
-        // If no API response, use mock data
-        setReports(mockData)
-        setTotalPages(1)
-        console.log("Using mock data due to API unavailability")
+      // Set pagination info
+      if (response.data.pagination) {
+        setTotalPages(response.data.pagination.pages || 1)
       }
+      */
+      
+      // Filter mock data based on filters
+      let filteredReports = [...MOCK_REPORTS]
+      
+      // Filter by active tab
+      if (activeTab !== "all") {
+        filteredReports = filteredReports.filter(report => report.category === activeTab)
+      }
+      
+      // Filter by category
+      if (categoryFilter !== "all") {
+        filteredReports = filteredReports.filter(report => report.category === categoryFilter)
+      }
+      
+      // Filter by status
+      if (statusFilter !== "all") {
+        filteredReports = filteredReports.filter(report => report.status === statusFilter)
+      }
+      
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        filteredReports = filteredReports.filter(report => 
+          report.title.toLowerCase().includes(query) || 
+          report.description.toLowerCase().includes(query)
+        )
+      }
+      
+      setReports(filteredReports)
+      setTotalPages(1) // Just one page for mock data
+      
     } catch (error) {
       console.error("Error fetching reports:", error)
-      setError("Failed to load reports. Please try again later.")
-      
-      // For demo purposes, load mock data on error
-      const mockData = [
-        {
-          _id: "1",
-          title: "Water Leak on Main Street",
-          description: "There's a significant water leak near the corner of Main and 5th.",
-          category: "water",
-          subcategory: "leak",
-          severity: "high",
-          status: "pending",
-          location: {
-            address: "123 Main St"
-          },
-          createdAt: new Date().toISOString(),
-          reporter: {
-            name: "John Doe"
-          },
-          upvotes: ["user1", "user2"],
-          comments: []
-        },
-        {
-          _id: "2",
-          title: "Power Outage in Oak District",
-          description: "Entire neighborhood has lost power after the storm.",
-          category: "electricity",
-          subcategory: "outage",
-          severity: "critical",
-          status: "in-progress",
-          location: {
-            address: "Oak Avenue District"
-          },
-          createdAt: new Date().toISOString(),
-          reporter: {
-            name: "Sarah Smith"
-          },
-          upvotes: ["user1"],
-          comments: [{user: "user3", text: "I'm experiencing this too!"}]
-        }
-      ];
-      setReports(mockData)
+      setError("Failed to load reports. Using sample data instead.")
+      setReports(MOCK_REPORTS)
       setTotalPages(1)
       
       toast({
@@ -214,9 +199,18 @@ export default function ReportsPage() {
 
   const upvoteReport = async (id: string) => {
     try {
-      await api.post(`/reports/${id}/upvote`)
-      // Update the local state to reflect the upvote
-      fetchReports()
+      // Update local state to simulate upvote 
+      const updatedReports = reports.map(report => {
+        if (report._id === id) {
+          return {
+            ...report,
+            upvotes: [...report.upvotes, "currentUser"]
+          }
+        }
+        return report
+      })
+      
+      setReports(updatedReports)
       
       toast({
         title: "Success",
@@ -298,7 +292,7 @@ export default function ReportsPage() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="water">Water</SelectItem>
               <SelectItem value="electricity">Electricity</SelectItem>
               <SelectItem value="noise">Noise</SelectItem>
@@ -311,7 +305,7 @@ export default function ReportsPage() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="in-progress">In Progress</SelectItem>
               <SelectItem value="resolved">Resolved</SelectItem>
