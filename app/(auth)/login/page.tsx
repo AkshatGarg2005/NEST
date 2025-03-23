@@ -1,14 +1,16 @@
+// app/(auth)/login/page.tsx
 "use client"
 
 import { useState } from "react"
 import Link from "next/link"
-import { AlertTriangle, Mail } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -16,6 +18,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { login, loginWithGoogle } = useAuth()
   const { toast } = useToast()
+  const router = useRouter()
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,6 +30,7 @@ export default function LoginPage() {
         title: "Success",
         description: "You have been logged in successfully",
       })
+      router.push("/")
     } catch (error: any) {
       console.error(error)
       let errorMessage = "Failed to login. Please try again."
@@ -58,6 +62,7 @@ export default function LoginPage() {
         title: "Success",
         description: "You have been logged in successfully with Google",
       })
+      router.push("/")
     } catch (error: any) {
       console.error(error)
       toast({

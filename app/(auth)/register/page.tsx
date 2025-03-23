@@ -1,3 +1,4 @@
+// app/(auth)/register/page.tsx
 "use client"
 
 import { useState, useRef } from "react"
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
   const [name, setName] = useState("")
@@ -28,6 +30,7 @@ export default function RegisterPage() {
   const { register, loginWithGoogle } = useAuth()
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -55,6 +58,15 @@ export default function RegisterPage() {
       return
     }
     
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      })
+      return
+    }
+    
     setIsLoading(true)
     
     try {
@@ -76,8 +88,11 @@ export default function RegisterPage() {
       
       toast({
         title: "Success",
-        description: "Registration successful! Please verify your email to continue.",
+        description: "Registration successful! You can now use the system.",
       })
+      
+      // Navigate directly to dashboard instead of verification page
+      router.push("/")
     } catch (error: any) {
       console.error(error)
       let errorMessage = "Failed to register. Please try again."
@@ -109,6 +124,7 @@ export default function RegisterPage() {
         title: "Success",
         description: "You have been registered successfully with Google",
       })
+      router.push("/")
     } catch (error: any) {
       console.error(error)
       toast({
@@ -270,7 +286,6 @@ export default function RegisterPage() {
                           <SelectItem value="AL">Alabama</SelectItem>
                           <SelectItem value="AK">Alaska</SelectItem>
                           <SelectItem value="AZ">Arizona</SelectItem>
-                          {/* Add all states here */}
                           <SelectItem value="CA">California</SelectItem>
                           <SelectItem value="CO">Colorado</SelectItem>
                           <SelectItem value="FL">Florida</SelectItem>
@@ -278,7 +293,6 @@ export default function RegisterPage() {
                           <SelectItem value="NY">New York</SelectItem>
                           <SelectItem value="TX">Texas</SelectItem>
                           <SelectItem value="WA">Washington</SelectItem>
-                          {/* other states... */}
                         </SelectContent>
                       </Select>
                     </div>

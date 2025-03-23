@@ -1,3 +1,4 @@
+// app/(auth)/verification-sent/page.tsx
 "use client"
 
 import Link from "next/link"
@@ -5,9 +6,9 @@ import { AlertTriangle, Mail, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/components/auth-provider"
-import { sendEmailVerification } from "firebase/auth"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { sendEmailVerification } from "firebase/auth"
 
 export default function VerificationSentPage() {
   const { firebaseUser } = useAuth()
