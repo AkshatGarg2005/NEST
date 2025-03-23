@@ -8,6 +8,7 @@ import {
   Droplets,
   Home,
   Lightbulb,
+  LogOut,
   MessageSquare,
   Settings,
   User,
@@ -31,9 +32,13 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/components/auth-provider"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link"
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { user, logout } = useAuth()
 
   const isActive = (path: string) => {
     return pathname === path
@@ -58,34 +63,34 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/")}>
-                  <a href="/">
+                  <Link href="/">
                     <Home />
                     <span>Dashboard</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/alerts")}>
-                  <a href="/alerts">
+                  <Link href="/alerts">
                     <Bell />
                     <span>Alerts</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/reports")}>
-                  <a href="/reports">
+                  <Link href="/reports">
                     <BarChart3 />
                     <span>Reports</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/events")}>
-                  <a href="/events">
+                  <Link href="/events">
                     <Calendar />
                     <span>Events</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -98,34 +103,34 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/water")}>
-                  <a href="/water">
+                  <Link href="/water">
                     <Droplets />
                     <span>Water</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/electricity")}>
-                  <a href="/electricity">
+                  <Link href="/electricity">
                     <Lightbulb />
                     <span>Electricity</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/noise")}>
-                  <a href="/noise">
+                  <Link href="/noise">
                     <Volume2 />
                     <span>Noise Complaints</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/maintenance")}>
-                  <a href="/maintenance">
+                  <Link href="/maintenance">
                     <Wrench />
                     <span>Maintenance</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -137,11 +142,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/forum")}>
-                  <a href="/forum">
+                <SidebarMenuButton asChild isActive={isActive("/chat")}>
+                  <Link href="/chat">
                     <MessageSquare />
-                    <span>Forum</span>
-                  </a>
+                    <span>Chat</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -150,27 +155,52 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        {user && (
+          <div className="px-4 py-2">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                {user.profilePicture ? (
+                  <AvatarImage src={user.profilePicture} alt={user.name} />
+                ) : (
+                  <AvatarFallback>
+                    {user.name.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="overflow-hidden">
+                <p className="truncate font-medium">{user.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              </div>
+            </div>
+          </div>
+        )}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/profile")}>
-              <a href="/profile">
+              <Link href="/profile">
                 <User />
                 <span>Profile</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/settings")}>
-              <a href="/settings">
+              <Link href="/settings">
                 <Settings />
                 <span>Settings</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
         <div className="flex items-center justify-between p-4">
           <ThemeToggle />
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={logout}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
             Sign Out
           </Button>
         </div>
@@ -178,4 +208,3 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
-

@@ -4,6 +4,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import api from "@/utils/api.util"
+// Import the client-side Cloudinary helper instead of the full SDK
+import { uploadToCloudinary } from "@/lib/cloudinary-client"
 
 interface User {
   id: string
@@ -20,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (userData: any) => Promise<void>
   logout: () => void
+  uploadProfilePicture: (file: File) => Promise<string>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -86,6 +89,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push("/login")
   }
 
+  // Upload profile picture using our client-side helper
+  const uploadProfilePicture = async (file: File) => {
+    try {
+      const result = await uploadToCloudinary(file, 'profiles');
+      
+      if (user && result.secure_url) {
+        // Update user profile with new image URL
+        await api.put('/users/profile', { 
+          profilePicture: result.secure_url 
+        });
+        
+        // Update local state
+        setUser({
+          ...user,
+          profilePicture: result.secure_url
+        });
+      }
+      
+      return result.secure_url;
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      throw error;
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -94,7 +122,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         login,
         register,
-        logout
+        logout,
+        uploadProfilePicture
       }}
     >
       {children}

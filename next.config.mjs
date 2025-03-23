@@ -1,3 +1,4 @@
+// next.config.mjs
 let userConfig = undefined
 try {
   userConfig = await import('./v0-user-next.config')
@@ -15,11 +16,27 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['res.cloudinary.com'], // Add Cloudinary domain
   },
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+  },
+  // Add webpack configuration to handle Node.js modules
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Don't resolve 'fs', 'os' modules on the client to prevent errors
+      config.resolve.fallback = { 
+        fs: false,
+        path: false,
+        os: false,
+        crypto: false,
+        stream: false,
+        buffer: false
+      };
+    }
+    return config;
   },
 }
 
